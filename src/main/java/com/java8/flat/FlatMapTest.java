@@ -1,7 +1,11 @@
 package com.java8.flat;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -57,11 +61,100 @@ public class FlatMapTest {
         System.out.println("==============================");
         List<AClass> collect8 = map.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
         System.out.println(collect8);
+        System.out.println("==============================");
+
 
         // 分享一个flatMap的复杂操作，实现List<Data1>和List<Data2>根据Id进行连接，将连接结果输出为一个List<OutputData>：
+        List<Data2> listOfData2 = new ArrayList<>();
+        listOfData2.add(new Data2(10501, "JOE", "Type1"));
+        listOfData2.add(new Data2(10603, "SAL", "Type5"));
+        listOfData2.add(new Data2(40514, "PETER", "Type4"));
+        listOfData2.add(new Data2(59562, "JIM", "Type2"));
+        listOfData2.add(new Data2(29415, "BOB", "Type1"));
+        listOfData2.add(new Data2(61812, "JOE", "Type9"));
+        listOfData2.add(new Data2(98432, "JOE", "Type7"));
+        listOfData2.add(new Data2(62556, "JEFF", "Type1"));
+        listOfData2.add(new Data2(10599, "TOM", "Type4"));
 
+        List<Data1> listOfData1 = new ArrayList<Data1>();
+
+        listOfData1.add(new Data1(10501, "JOE", 3000000));
+        listOfData1.add(new Data1(10603, "SAL", 6225000));
+        listOfData1.add(new Data1(40514, "PETER", 2005000));
+        listOfData1.add(new Data1(59562, "JIM", 3000000));
+        listOfData1.add(new Data1(29415, "BOB", 3000000));
+
+        List<OutputData> collect9 = listOfData1.stream()
+                .flatMap(x -> listOfData2.stream()
+                        .filter(y -> y.getId() == x.getId())
+                        .map(y -> new OutputData(y.getId(), x.getName(), y.getType(), x.getAmount())))
+                .collect(Collectors.toList());
+        System.out.println(collect9);
+
+        System.out.println("==============================");
+
+        // faltMapToInt 首先看一下flatMapToInt方法定义：IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper);
+        List<List<String>> lists = Arrays.asList(
+                Arrays.asList("1", "2"),
+                Arrays.asList("5", "6"),
+                Arrays.asList("3", "4")
+        );
+        IntStream intStream = lists.stream().flatMapToInt(l -> l.stream().mapToInt(s -> Integer.parseInt(s)));
+//        intStream.forEach(i-> System.out.println(i));
+//        int sum = intStream.peek(System.out::println).sum();
+//        System.out.println(sum);
+        List<Integer> collect10 = intStream.boxed().collect(Collectors.toList());
+        System.out.println(collect10);
+        System.out.println("==============================");
+
+        List<List<List<String>>> listString = Arrays.asList(
+                Arrays.asList(
+                        Arrays.asList("1", "2", "3"),
+                        Arrays.asList("12", "12", "13"),
+                        Arrays.asList("22", "22", "23")
+                ),
+                Arrays.asList(
+                        Arrays.asList("10", "20", "30"),
+                        Arrays.asList("120", "120", "130"),
+                        Arrays.asList("220", "220", "230")
+                )
+        );
+        System.out.println(listString);
+        List<Integer> collect11 = listString.stream()
+                .flatMapToInt(a -> a.stream().flatMapToInt(b -> b.stream().mapToInt(c -> Integer.parseInt(c))))
+                .boxed()
+                .collect(Collectors.toList());
+        System.out.println(collect11);
+        System.out.println("==============================");
     }
 }
+
+
+@Data
+@AllArgsConstructor
+class Data1 {
+    private int id;
+    private String name;
+    private int amount;
+}
+
+@Data
+@AllArgsConstructor
+class Data2 {
+    private int id;
+    private String name;
+    private String type;
+}
+
+@Data
+@AllArgsConstructor
+class OutputData {
+    private int id;
+    private String name;
+    private String type;
+    private int amount;
+}
+
 
 class AClass {
     private int id;
